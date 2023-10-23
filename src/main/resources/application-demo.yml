@@ -51,5 +51,5 @@ springdoc:
     path: /jaizex-api-docs
   swagger-ui:
     path: /swagger-ui-jaizex.html
-    operationsSorter: method
+    operationsSorter: alpha
     tagsSorter: alpha
