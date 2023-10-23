@@ -1,4 +1,4 @@
-name: Buybill Demo - Java CI/CD with Maven
+name: Jaiz Express Demo - Java CI/CD with Maven
 
 on:
   pull_request:
