@@ -28,4 +28,4 @@ jobs:
           checkstring: "ok"
           branch: "demo"
           remote_branch: "master"
-          rollbackonhealthcheckfailed: true
+          rollbackonhealthcheckfailed: false
