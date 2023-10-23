@@ -1,0 +1,31 @@
+name: Buybill Demo - Java CI/CD with Maven
+
+on:
+  pull_request:
+    branches:
+      - demo
+  push:
+    branches:
+      - demo
+  release:
+    types: [ created ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to Heroku
+        uses: akhileshns/heroku-deploy@v3.12.14
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "jaiz-express-demo"
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          healthcheck: "https://jaiz-express-demo-d3a9ebd9ecba.herokuapp.com/health"
+          checkstring: "ok"
+          branch: "demo"
+          remote_branch: "master"
+          rollbackonhealthcheckfailed: true

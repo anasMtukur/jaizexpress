@@ -1,0 +1,55 @@
+host:
+  name: localhost:9191
+  scheme: http
+server:
+  contextPath: /v1
+  port: 9191
+  ssl:
+    enabled: false
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+  jpa:
+    properties:
+      hibernate:
+        show-sql: true
+        default-schema: jaizex
+        generate-statistics: false
+        order-inserts: true
+        jdbc:
+          batch-size: 10
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    password: KfiwSDrL6VPP2s5
+    url: jdbc:postgresql://localhost:5432/jaiz_express_db?currentSchema=jaizex
+    username: jaizexpress
+    hikari:
+      connection-timeout: 30000
+      idle-timeout: 30000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      leak-detection-threshold: 1000
+      pool-name: JEXPOOL
+      max-lifetime: 2000000
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+flyway:
+  locations: classpath:db/migration
+  schemas: jaizex
+  table: flyway_schema_history
+jwt:
+  secret: Gh5k*O8MQ!0oru*z
+springdoc:
+  api-docs:
+    path: /jaizex-api-docs
+  swagger-ui:
+    path: /swagger-ui-jaizex.html
+    operationsSorter: method
+    tagsSorter: alpha
