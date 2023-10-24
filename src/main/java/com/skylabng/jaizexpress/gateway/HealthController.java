@@ -2,6 +2,7 @@ package com.skylabng.jaizexpress.gateway;
 
 import com.skylabng.jaizexpress.enduser.service.EndUserService;
 import io.micrometer.common.util.internal.logging.AbstractInternalLogger;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @RestController
+@Hidden
 @RequestMapping("/health")
 public class HealthController {
     private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);

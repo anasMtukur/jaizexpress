@@ -59,7 +59,7 @@ public class WebSecurityConfig {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests( (request) -> request
-                .requestMatchers("/api/account/**").permitAll()
+                .requestMatchers("/api/account/**", "api/qrcode/**").permitAll()
                 .requestMatchers("/health").permitAll()
                 .requestMatchers("/jaizex-api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/jaizex-api-docs/**").permitAll()

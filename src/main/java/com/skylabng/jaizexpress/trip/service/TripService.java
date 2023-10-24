@@ -22,6 +22,7 @@ import com.skylabng.jaizexpress.trip.repository.TripRepository;
 import com.skylabng.jaizexpress.zone.ZoneExternalAPI;
 import com.skylabng.jaizexpress.zone.ZoneInternalAPI;
 import com.skylabng.jaizexpress.zone.ZonePayload;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,12 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
     StationInternalAPI stationAPI;
     ZoneInternalAPI zoneAPI;
     SubsidyInternalAPI subsidyAPI;
+
+    @Value("${host.name}")
+    private String HOSTNAME;
+
+    @Value("${host.scheme}")
+    private String HOSTSCHEME;
 
     public TripService(
             TripRepository repository,
@@ -59,11 +66,13 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
         PurchaseMode mode = payload.getPurchaseMode();
         switch ( mode ){
             case CARD:
-                return processCardTrip( payload );
+                TripPayload newCardTrip = processCardTrip( payload );
+                return generateQRCodeUrl( newCardTrip );
 
             case APP:
             case AGENT:
-                return processTrip( payload );
+                TripPayload newTrip = processTrip( payload );
+                return generateQRCodeUrl( newTrip );
 
             default:
                 System.out.println("Unsupported Mode");
@@ -199,5 +208,16 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
         }
 
         return total;
+    }
+
+    public TripPayload generateQRCodeUrl( TripPayload payload ){
+        if( payload.getId() == null ) {
+            return payload;
+        }
+        String qrData = "JEXTRIP$" + payload.getId() + "$TRIPJEX";
+        payload.setQrUrl( HOSTSCHEME + "://" + HOSTNAME + "/api/qrcode/generate?data=" + qrData );
+
+        return mapper.fromTripToPayload(
+                repository.saveAndFlush( mapper.fromPayloadToTrip(payload) ));
     }
 }

@@ -46,6 +46,7 @@ public class AccountController {
     }
 
     @Operation(
+            security = {},
             summary = "Authenticate A User",
             description = "Authenticate a user with given username and password. The response is a JSON containing JWT Token")
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -62,6 +63,7 @@ public class AccountController {
     }
 
     @Operation(
+            security = {},
             summary = "Register New User",
             description = "Create a new User with default role of USER. This endpoint should only be available to User Mobile App.")
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -108,6 +110,7 @@ public class AccountController {
     }
 
     @Operation(
+            security = {},
             summary = "Verify Reset Code",
             description = "Check if a reset code is valid before allowing user to reset their password")
     @GetMapping( value = "/verify-reset-code/{reset-code}", produces = MediaType.APPLICATION_JSON_VALUE )
@@ -120,6 +123,7 @@ public class AccountController {
     }
 
     @Operation(
+            security = {},
             summary = "Initiate forgot password",
             description = "This endpoint should be called when user forgot their password and want to reset it. " +
                     "A reset token and link will be generated and sent to the user via account email.")
@@ -136,6 +140,7 @@ public class AccountController {
     }
 
     @Operation(
+            security = {},
             summary = "Reset Password",
             description = "Updates the user account with the new password. This should only be called if verify reset code is successful.")
     @PutMapping(value = "/reset-password", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

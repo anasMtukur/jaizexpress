@@ -1,5 +1,5 @@
 host:
-  name: jaiz-express-demo-d3a9ebd9ecba.herokuapp.com/
+  name: jaiz-express-demo-d3a9ebd9ecba.herokuapp.com
   scheme: https
 server:
   contextPath: /v1
