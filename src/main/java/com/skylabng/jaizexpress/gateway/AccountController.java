@@ -3,6 +3,7 @@ package com.skylabng.jaizexpress.gateway;
 import com.skylabng.jaizexpress.audit.RegisterMethod;
 import com.skylabng.jaizexpress.enduser.EndUserInternalAPI;
 import com.skylabng.jaizexpress.enduser.EndUserPayload;
+import com.skylabng.jaizexpress.enums.WalletStatus;
 import com.skylabng.jaizexpress.exception.RegistrationFailedException;
 import com.skylabng.jaizexpress.exception.UserAlreadyExistException;
 import com.skylabng.jaizexpress.payload.*;
@@ -11,6 +12,8 @@ import com.skylabng.jaizexpress.enums.RoleName;
 import com.skylabng.jaizexpress.role.RolePayload;
 import com.skylabng.jaizexpress.security.service.JwtUserDetailService;
 import com.skylabng.jaizexpress.security.utils.JwtTokenUtil;
+import com.skylabng.jaizexpress.wallet.WalletInternalAPI;
+import com.skylabng.jaizexpress.wallet.WalletPayload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +32,9 @@ import org.springframework.web.bind.annotation.*;
 //@CrossOrigin(origins = "http://localhost:8081", maxAge = 3600, allowCredentials = "true")
 @RequestMapping("/api/account")
 public class AccountController {
-    private EndUserInternalAPI userAPI;
-    private RoleInternalAPI roleAPI;
+    private final EndUserInternalAPI userAPI;
+    private final RoleInternalAPI roleAPI;
+    private final WalletInternalAPI walletAPI;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -40,9 +44,10 @@ public class AccountController {
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    public AccountController( EndUserInternalAPI userAPI, RoleInternalAPI roleAPI ){
+    public AccountController(EndUserInternalAPI userAPI, RoleInternalAPI roleAPI, WalletInternalAPI walletAPI){
         this.userAPI = userAPI;
         this.roleAPI = roleAPI;
+        this.walletAPI = walletAPI;
     }
 
     @Operation(
@@ -86,14 +91,12 @@ public class AccountController {
 
         boolean exist = userAPI.checkUserExist(username, payload.getEmail(), payload.getMobile());
         if(exist){
-            //Throw user exist exception
             throw new UserAlreadyExistException("Username", username);
         }
 
         entity = userAPI.save(entity);
 
         if( entity.id() == null ){
-            //Throw Failed registration
             throw new RegistrationFailedException("User registration failed. Please try again.");
         }
 
@@ -101,6 +104,12 @@ public class AccountController {
         RolePayload roleEntity = new RolePayload( null, entity.id(), RoleName.valueOf( payload.getRole() ));
         roleAPI.addRole(roleEntity);
 
+        //Initiate Wallet
+        WalletPayload wallet = new WalletPayload( null, entity.id(), 0, WalletStatus.ACTIVE, null, null);
+        walletAPI.save(wallet);
+
+        //Authenticate New User
+        authenticate( username, payload.getPassword() );
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername( username );
 

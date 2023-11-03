@@ -53,3 +53,9 @@ springdoc:
     path: /swagger-ui-jaizex.html
     operationsSorter: method
     tagsSorter: alpha
+klikpay:
+  ip: 35.157.81.22
+  host: https://live.klik.ng/api/v1
+  token: 8|9PPxknmEuryGe4x9mAgh3Ixeh7iJFeM1sgBqlW51
+  #host: http://sandbox.klik.ng/api/v1
+  #token: 3|2FPUIqWZZ8pOui537B0ehKtEQQzq9oaP86spzXDD

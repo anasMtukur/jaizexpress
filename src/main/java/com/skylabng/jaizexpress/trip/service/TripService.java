@@ -1,25 +1,23 @@
 package com.skylabng.jaizexpress.trip.service;
 
-import com.skylabng.jaizexpress.enduser.EndUserPayload;
-import com.skylabng.jaizexpress.enduser.model.EndUser;
+import com.skylabng.jaizexpress.card.CardInternalAPI;
+import com.skylabng.jaizexpress.card.CardPayload;
 import com.skylabng.jaizexpress.enums.PaymentMethod;
 import com.skylabng.jaizexpress.enums.PaymentStatus;
 import com.skylabng.jaizexpress.enums.PurchaseMode;
 import com.skylabng.jaizexpress.enums.TripStatus;
 import com.skylabng.jaizexpress.payload.PagedPayload;
-import com.skylabng.jaizexpress.station.StationExternalAPI;
 import com.skylabng.jaizexpress.station.StationInternalAPI;
 import com.skylabng.jaizexpress.station.StationPayload;
-import com.skylabng.jaizexpress.station.model.Station;
 import com.skylabng.jaizexpress.subsidy.SubsidyInternalAPI;
 import com.skylabng.jaizexpress.subsidy.SubsidyPayload;
+import com.skylabng.jaizexpress.transaction.TransactionInternalAPI;
 import com.skylabng.jaizexpress.trip.TripExternalAPI;
 import com.skylabng.jaizexpress.trip.TripInternalAPI;
 import com.skylabng.jaizexpress.trip.TripPayload;
 import com.skylabng.jaizexpress.trip.mapper.TripMapper;
 import com.skylabng.jaizexpress.trip.model.Trip;
 import com.skylabng.jaizexpress.trip.repository.TripRepository;
-import com.skylabng.jaizexpress.zone.ZoneExternalAPI;
 import com.skylabng.jaizexpress.zone.ZoneInternalAPI;
 import com.skylabng.jaizexpress.zone.ZonePayload;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,18 +26,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 @Service
 public class TripService implements TripInternalAPI, TripExternalAPI {
-    TripRepository repository;
-    TripMapper mapper;
-    StationInternalAPI stationAPI;
-    ZoneInternalAPI zoneAPI;
-    SubsidyInternalAPI subsidyAPI;
+    private final static double MINIMUM_BALANCE = 100.0;
+
+    private final TripRepository repository;
+    private final TripMapper mapper;
+    private final StationInternalAPI stationAPI;
+    private final ZoneInternalAPI zoneAPI;
+    private final SubsidyInternalAPI subsidyAPI;
+    private final TransactionInternalAPI transactionAPI;
+    private final CardInternalAPI cardAPI;
 
     @Value("${host.name}")
     private String HOSTNAME;
@@ -52,13 +53,15 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
             TripMapper mapper,
             StationInternalAPI stationAPI,
             ZoneInternalAPI zoneAPI,
-            SubsidyInternalAPI subsidyAPI
-    ){
+            SubsidyInternalAPI subsidyAPI,
+            TransactionInternalAPI transactionAPI, CardInternalAPI cardAPI){
         this.repository = repository;
         this.mapper = mapper;
         this.stationAPI = stationAPI;
         this.zoneAPI = zoneAPI;
         this.subsidyAPI = subsidyAPI;
+        this.transactionAPI = transactionAPI;
+        this.cardAPI = cardAPI;
     }
 
     @Override
@@ -88,7 +91,7 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
 
     @Override
     public TripPayload getTripDetails(UUID id) {
-        return null;
+        return repository.getOneById( id ).orElseThrow(()->new RuntimeException( "Trip with the given id not found" ));
     }
 
     @Override
@@ -139,6 +142,15 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
         //If Trip doesn't exist, check if amount limit is valid on card
         //if limit is invalid throw exception card limit
         // if limit is valid save new and return
+        CardPayload card = cardAPI.getCardByNumber( payload.getCard() );
+        if( card == null ){
+            throw (new Exception("Card with given number not found."));
+        }
+
+        if( card.balance() < MINIMUM_BALANCE ){
+            throw (new Exception("This card balance is too low."));
+        }
+
         TripPayload trip = getOngoingCardTrip( payload.getCard() );
         if(trip != null){
             boolean isValid = isValidTrip( trip );
@@ -149,6 +161,7 @@ public class TripService implements TripInternalAPI, TripExternalAPI {
 
             return trip;
         }
+        payload.setCard( String.valueOf(card.id()) );
         payload.setPaymentMethod( PaymentMethod.CARD );
         payload.setPaymentStatus( PaymentStatus.WAITING );
         payload.setStatus( TripStatus.NEW );

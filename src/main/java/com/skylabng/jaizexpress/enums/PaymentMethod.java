@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum PaymentMethod {
+    GATEWAY("Gateway"),
     CASH("Cash"),
     CARD("Card"),
     QR("QR Code");

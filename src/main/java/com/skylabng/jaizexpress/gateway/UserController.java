@@ -3,7 +3,12 @@ package com.skylabng.jaizexpress.gateway;
 import com.skylabng.jaizexpress.enduser.EndUserExternalAPI;
 import com.skylabng.jaizexpress.enduser.EndUserPayload;
 import com.skylabng.jaizexpress.payload.PagedPayload;
+import com.skylabng.jaizexpress.payload.ReloadWalletPayload;
+import com.skylabng.jaizexpress.payload.UserDetailsPayload;
+import com.skylabng.jaizexpress.payment.PaymentPayload;
 import com.skylabng.jaizexpress.utils.PagingUtil;
+import com.skylabng.jaizexpress.wallet.WalletInternalAPI;
+import com.skylabng.jaizexpress.wallet.WalletPayload;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +48,19 @@ public class UserController {
         PageRequest pageRequest = PagingUtil.getPageRequestObject(pageNumber, pageSize, sortBy, sortDirection);
         PagedPayload<EndUserPayload> response = api.getUserList(pageRequest);
 
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "Reload wallet with new balance",
+            description = "Call this API to book/buy ticket for a new trip. When both origin and destination are present and purchase mode is AGENT," +
+                    "then the full trip will be created. If only origin is available, it means that the trip is initiated with a Card amd will be " +
+                    "completed at the destination.")
+    @GetMapping( value = "/details", produces = MediaType.APPLICATION_JSON_VALUE )
+    public ResponseEntity<UserDetailsPayload> getUserDetails(Principal principal) throws Exception {
+        EndUserPayload user = api.getUserByUsername(principal.getName());
+
+        UserDetailsPayload response = api.getUserDetails( user.id() );
         return ResponseEntity.ok(response);
     }
 }

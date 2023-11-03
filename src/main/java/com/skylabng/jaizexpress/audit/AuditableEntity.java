@@ -20,17 +20,16 @@ public class AuditableEntity implements Serializable {
 
     @Id
     @Basic(optional = false)
-    @NotNull
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     protected UUID id;
+
     @Basic(optional = false)
-    @NotNull
     @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
+
     @Basic(optional = false)
-    @NotNull
     @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
