@@ -116,6 +116,9 @@ public class WalletController {
         PaymentStatus payStat = payload.status().equalsIgnoreCase("true") ? PaymentStatus.PAID : PaymentStatus.FAILED;
 
         TransactionPayload transaction = transactionAPI.getTransactionById( UUID.fromString(payload.reference_id()) );
+        if(transaction.isBalanced()){
+            throw new RuntimeException("This transaction has been balanced already.");
+        }
 
         PaymentPayload payment = paymentAPI.getTransactionPayment(UUID.fromString(payload.reference_id()));
         String[] possibleSuccess = new String[] { "true", "success", "processed" };
